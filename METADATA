@@ -1,23 +1,20 @@
 # This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update kotlinpoet
+# Usage: tools/external_updater/updater.sh update external/kotlinpoet
 # For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
 
 name: "kotlinpoet"
 description: "A Kotlin API for generating .kt source files"
 third_party {
-  url {
-    type: HOMEPAGE
-    value: "https://square.github.io/kotlinpoet/"
-  }
-  url {
-    type: GIT
-    value: "https://github.com/square/kotlinpoet.git"
-  }
-  version: "562b5c4a5297e85ae2727fc9f6c4e96e770d7420"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 10
-    day: 10
+    year: 2024
+    month: 2
+    day: 15
+  }
+  homepage: "https://square.github.io/kotlinpoet/"
+  identifier {
+    type: "Git"
+    value: "https://github.com/square/kotlinpoet.git"
+    version: "1.16.0"
   }
 }
