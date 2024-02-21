@@ -3,6 +3,71 @@ Change Log
 
 ## Unreleased
 
+## Version 1.16.0
+
+Thanks to [@drawers][drawers], [@rickclephas][rickclephas] for contributing to this release.
+
+_2024-01-18_
+
+ * New: Kotlin 1.9.22.
+ * New: KSP 1.9.22-1.0.16.
+ * New: Add `NameAllocator` API to control keyword pre-allocation (#1803).
+ * Fix: Fix issue with missing `suspend` modifier in `KSTypeReference.toTypeName` (#1793).
+ * Fix: Honour same-package import aliases (#1794).
+ * Fix: Always include parameter docs in the type header (#1800).
+
+## Version 1.15.3
+
+Thanks to [@gabrielittner][gabrielittner] for contributing to this release.
+
+_2023-12-04_
+
+ * Fix: Fix nullability of lambdas in `KSTypeReference.toTypeName` (#1756).
+
+## Version 1.15.2
+
+Thanks to [@evant][evant] for contributing to this release.
+
+_2023-11-30_
+
+ * New: Kotlin 1.9.21.
+ * New: KSP 1.9.21-1.0.15.
+ * New: KSP: more accurately represent function types (#1742).
+
+## Version 1.15.1
+
+_2023-11-19_
+
+ * Fix: Fix a regression introduced by #1637, where a superfluous newline is added to a type's KDoc
+ if it has a primary constructor with no docs (#1727).
+
+## Version 1.15.0
+
+_2023-11-18_
+
+Thanks to [@drawers][drawers], [@fejesjoco][fejesjoco], [@takahirom][takahirom],
+[@martinbonnin][martinbonnin], [@mcarleio][mcarleio] for contributing to this release.
+
+In this release the `:kotlinpoet` module has been converted to a Kotlin Multiplatform module
+(#1654), though for now it only supports the JVM target. **Important**: unless you're building
+with Gradle, you will now need to depend on the `kotlinpoet-jvm` artifact, instead of `kotlinpoet` -
+see [Downloads](index.md#download) for instructions.
+
+ * New: Kotlin 1.9.20.
+ * New: KSP 1.9.20-1.0.14.
+ * New: Extract `TypeSpecHolder` interface for constructs that can hold a TypeSpec and their builders (#1723).
+ * New: Expose relative path from `FileSpec` (#1720).
+ * New: Return the generated path from `FileSpec.writeTo()`. (#1514).
+ * New: Remove default compatibility from unstable types (#1662).
+ * New: Deprecate `TypeSpec.expectClassBuilder()` and `TypeSpec.valueClassBuilder()` (#1589).
+ * New: Add option to convert `KSAnnotation` to `AnnotationSpec` while omitting default values (#1538).
+ * New: Add `FileSpec.builder` convenience for `MemberName` (#1585).
+ * Fix: Set `DecimalFormatSymbols.minusSign` for consistency across locales (#1658).
+ * Fix: Fix link to incremental KSP in KDoc (#1638).
+ * Fix: Emit primary constructor KDoc (#1637).
+ * Change: kotlinx-metadata 0.7.0. This is a breaking change for users of the `:kotlinpoet-metadata`
+   module, as most `Flags`-API extensions have been removed in favor of the now-available first-party versions.
+
 ## Version 1.14.2
 
 _2023-05-30_
@@ -716,3 +781,7 @@ _2017-05-16_
  [Squiry]: https://github.com/Squiry
  [Omico]: https://github.com/Omico
  [RBusarow]: https://github.com/RBusarow
+ [fejesjoco]: https://github.com/fejesjoco
+ [takahirom]: https://github.com/takahirom
+ [mcarleio]: https://github.com/mcarleio
+ [gabrielittner]: https://github.com/gabrielittner
