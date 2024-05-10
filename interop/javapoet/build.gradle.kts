@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+plugins {
+  kotlin("jvm")
+}
 
 tasks.jar {
   manifest {
@@ -21,7 +24,7 @@ tasks.jar {
 }
 
 dependencies {
-  api(project(":kotlinpoet"))
+  api(projects.kotlinpoet)
   api(libs.javapoet)
   testImplementation(libs.kotlin.junit)
   testImplementation(libs.truth)

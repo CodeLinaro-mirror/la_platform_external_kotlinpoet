@@ -3,10 +3,18 @@
   "extends": [
     "config:base"
   ],
+  "semanticCommits": "disabled",
   "packageRules": [
     {
       "matchManagers": ["pip_requirements"],
       "automerge": true
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.jetbrains\\.kotlin:(?:[\\w-]+)$",
+        "^com\\.google\\.devtools\\.ksp:(?:[\\w-]+)$"
+      ],
+      "groupName": "Kotlin and KSP"
     }
   ]
 }

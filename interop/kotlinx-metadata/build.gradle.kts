@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+plugins {
+  kotlin("jvm")
+}
 
 tasks.jar {
   manifest {
@@ -21,10 +24,11 @@ tasks.jar {
 }
 
 tasks.compileTestKotlin {
-  kotlinOptions {
-    freeCompilerArgs = listOf(
+  compilerOptions {
+    freeCompilerArgs.addAll(
       "-Xjvm-default=all",
       "-opt-in=com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview",
+      "-opt-in=org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi",
     )
   }
 }
@@ -33,7 +37,7 @@ dependencies {
   implementation(libs.autoCommon)
   implementation(libs.guava)
   api(libs.kotlin.metadata)
-  api(project(":kotlinpoet"))
+  api(projects.kotlinpoet)
 
   testImplementation(libs.kotlin.junit)
   testImplementation(libs.truth)
