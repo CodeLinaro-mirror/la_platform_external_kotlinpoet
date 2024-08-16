@@ -20,8 +20,14 @@ plugins {
 
 tasks.compileTestKotlin {
   compilerOptions {
-    freeCompilerArgs.add("-opt-in=org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi")
+    optIn.add("org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi")
   }
+}
+
+tasks.test {
+  // KSP2 needs more memory to run
+  minHeapSize = "1g"
+  maxHeapSize = "4g"
 }
 
 dependencies {
@@ -37,6 +43,7 @@ dependencies {
   testImplementation(libs.ksp)
   testImplementation(libs.kotlinCompileTesting)
   testImplementation(libs.kotlinCompileTesting.ksp)
+  testImplementation(libs.ksp.aaEmbeddable)
   testImplementation(libs.kotlin.junit)
   testImplementation(libs.truth)
 }
