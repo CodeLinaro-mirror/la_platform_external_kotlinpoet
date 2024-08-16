@@ -3,6 +3,71 @@ Change Log
 
 ## Unreleased
 
+## Version 1.18.1
+
+Thanks to [@mitasov-ra][mitasov-ra] for contributing to this release.
+
+_2024-07-15_
+
+ * Fix: Workaround for [KT-18706][kt-18706]: KotlinPoet now generates import aliases without backticks (#1920).
+
+   ```kotlin
+   // before, doesn't compile due to KT-18706
+   import com.example.one.`$Foo` as `One$Foo`
+   import com.example.two.`$Foo` as `Two$Foo`
+
+   // now, compiles
+   import com.example.one.`$Foo` as One__Foo
+   import com.example.two.`$Foo` as Two__Foo
+   ```
+
+## Version 1.18.0
+
+Thanks to [@DanielGronau][DanielGronau] for contributing to this release.
+
+_2024-07-05_
+
+ * New: Kotlin 2.0.0.
+ * New: KSP 2.0.0-1.0.22.
+ * New: Promote `kotlinpoet-metadata` out of preview to stable.
+ * New: Migrate `kotlinpoet-metadata` to stable `org.jetbrains.kotlin:kotlin-metadata-jvm` artifact for Metadata parsing.
+ * New: Make enum entry references in `KSAnnotation.toAnnotationSpec()` and `KSClassDeclaration.toClassName()` more robust.
+ * Fix: Don't expand typealiases of function types to `LambdaTypeName`s in `KSTypeReference.toTypeName()`.
+ * Fix: Avoid rounding small double and float values in `%L` translation (#1927).
+ * Fix: Fix typealias type argument resolution in KSP2 (#1929).
+
+## Version 1.17.0
+
+Thanks to [@jisungbin][jisungbin], [@hfhbd][hfhbd], [@evant][evant], [@sgjesse][sgjesse], [@sebek64][sebek64] for
+contributing to this release.
+
+_2024-05-24_
+
+* Change: kotlinx-metadata 0.9.0. Note that the `KotlinClassMetadata.read` is deprecated in 0.9.0 and replaced with
+  `readStrict` (#1830).
+  * Note: we now also provide `lenient` parameters to map to the underlying `readStrict()` and `readLenient()` calls
+    (#1766).
+  * We have also removed various `Class`/`TypeElement`/`Metadata`-to-`KmClass` APIs from the public API, as these are
+    trivial to write now with kotlinx-metadata's newer APIs and allows us to focus the API surface area of this artifact
+    better (#1891).
+* New: Supertype list wraps to one-per-line if the primary constructor spans multiple lines (#1866).
+* New: Extract `MemberSpecHolder` interface for constructs that can hold `PropertySpec`s and `FunSpec`s and their
+  builders (#1877).
+* New: `joinToCode` variant which operates on any type, but requires a transform lambda to convert each element into a
+  `CodeBlock` (#1874).
+* New: Support annotation type arguments in `KSAnnotation.toAnnotationSpec()` (#1889).
+* Fix: Prevent name clashes between a function in class and a function call in current scope (#1850).
+* Fix: Fix extension function imports (#1814).
+* Fix: Omit implicit modifiers on `FileSpec.scriptBuilder` (#1813).
+* Fix: Fix trailing newline in `PropertySpec` (#1827).
+* Fix: `KSAnnotation.toAnnotationSpec` writes varargs in place instead of making them an array to work around a Kotlin
+  issue with `OptIn` annotations (#1833).
+* Fix: `MemberName`s without a package are now correctly imported (#1841)
+* Fix: Throw if primary constructor delegates to other constructors (#1859).
+* Fix: Aliased imports with nested class (#1876).
+* Fix: Check for error types in `KSType.toClassName()` (#1890).
+* Fix: Support generating a single import for overloaded `MemberName`s (#1909).
+
 ## Version 1.16.0
 
 Thanks to [@drawers][drawers], [@rickclephas][rickclephas] for contributing to this release.
@@ -751,6 +816,7 @@ _2017-05-16_
  [ksp-interop-docs]: https://square.github.io/kotlinpoet/interop-ksp/
  [javapoet]: https://github.com/square/javapoet
  [javapoet-interop-docs]: https://square.github.io/kotlinpoet/interop-javapoet/
+ [kt-18706]: https://youtrack.jetbrains.com/issue/KT-18706
 
  [martinbonnin]: https://github.com/martinbonnin
  [idanakav]: https://github.com/idanakav
@@ -785,3 +851,9 @@ _2017-05-16_
  [takahirom]: https://github.com/takahirom
  [mcarleio]: https://github.com/mcarleio
  [gabrielittner]: https://github.com/gabrielittner
+ [jisungbin]: https://github.com/jisungbin
+ [hfhbd]: https://github.com/hfhbd
+ [sgjesse]: https://github.com/sgjesse
+ [sebek64]: https://github.com/sebek64
+ [DanielGronau]: https://github.com/DanielGronau
+ [mitasov-ra]: https://github.com/mitasov-ra
