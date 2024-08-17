@@ -322,6 +322,51 @@ class MemberNameTest {
     )
   }
 
+  @Test fun importedMemberClassFunctionNameDontClashForParameterValue() {
+    val tacoName = ClassName("com.squareup.tacos", "Taco")
+    val meatMember = ClassName("com.squareup", "Fridge").member("meat")
+    val buildFun = FunSpec.builder("build")
+      .returns(tacoName)
+      .addStatement("return %T(%M { })", tacoName, meatMember)
+      .build()
+    val spec = FileSpec.builder(tacoName)
+      .addType(
+        TypeSpec.classBuilder("DeliciousTaco")
+          .addFunction(buildFun)
+          .addFunction(FunSpec.builder("deliciousMeat").build())
+          .build(),
+      )
+      .addType(
+        TypeSpec.classBuilder("TastelessTaco")
+          .addFunction(buildFun)
+          .addFunction(FunSpec.builder("meat").build())
+          .build(),
+      )
+      .build()
+    assertThat(spec.toString()).isEqualTo(
+      """
+      |package com.squareup.tacos
+      |
+      |import com.squareup.Fridge.meat
+      |
+      |public class DeliciousTaco {
+      |  public fun build(): Taco = Taco(meat { })
+      |
+      |  public fun deliciousMeat() {
+      |  }
+      |}
+      |
+      |public class TastelessTaco {
+      |  public fun build(): Taco = Taco(com.squareup.Fridge.meat { })
+      |
+      |  public fun meat() {
+      |  }
+      |}
+      |
+      """.trimMargin(),
+    )
+  }
+
   @Test fun memberNameAliases() {
     val createSquareTaco = MemberName("com.squareup.tacos", "createTaco")
     val createTwitterTaco = MemberName("com.twitter.tacos", "createTaco")
@@ -478,7 +523,7 @@ class MemberNameTest {
       .isEqualTo(MemberName(ClassName("kotlin.text", "Regex"), "fromLiteral"))
   }
 
-  @Test fun `%N escapes MemberNames`() {
+  @Test fun `N escapes MemberNames`() {
     val taco = ClassName("com.squareup.tacos", "Taco")
     val packager = ClassName("com.squareup.tacos", "TacoPackager")
     val file = FileSpec.builder("com.example", "Test")
@@ -542,6 +587,29 @@ class MemberNameTest {
     )
   }
 
+  @Test fun importMemberWithoutPackage() {
+    val createTaco = MemberName("", "createTaco")
+    val file = FileSpec.builder("com.example", "Test")
+      .addFunction(
+        FunSpec.builder("makeTacoHealthy")
+          .addStatement("val taco = %M()", createTaco)
+          .build(),
+      )
+      .build()
+    assertThat(file.toString()).isEqualTo(
+      """
+      |package com.example
+      |
+      |import createTaco
+      |
+      |public fun makeTacoHealthy() {
+      |  val taco = createTaco()
+      |}
+      |
+      """.trimMargin(),
+    )
+  }
+
   // https://github.com/square/kotlinpoet/issues/1089
   @Test fun `extension MemberName imported if name clash`() {
     val hashCode = MemberName("kotlin", "hashCode", isExtension = true)
@@ -584,6 +652,31 @@ class MemberNameTest {
           }
           return result
         }
+      }
+
+      """.trimIndent(),
+    )
+  }
+
+  // https://github.com/square/kotlinpoet/issues/1907
+  @Test fun `extension and non-extension MemberName clash`() {
+    val file = FileSpec.builder("com.squareup.tacos", "Tacos")
+      .addFunction(
+        FunSpec.builder("main")
+          .addStatement("println(%M(Taco()))", MemberName("com.squareup.wrappers", "wrap"))
+          .addStatement("println(Taco().%M())", MemberName("com.squareup.wrappers", "wrap", isExtension = true))
+          .build(),
+      )
+      .build()
+    assertThat(file.toString()).isEqualTo(
+      """
+      package com.squareup.tacos
+
+      import com.squareup.wrappers.wrap
+
+      public fun main() {
+        println(wrap(Taco()))
+        println(Taco().wrap())
       }
 
       """.trimIndent(),
