@@ -138,7 +138,9 @@ internal fun stringLiteralWithQuotes(
   }
 }
 
-internal fun CodeBlock.ensureEndsWithNewLine() = if (isEmpty()) {
+internal fun CodeBlock.ensureEndsWithNewLine() = trimTrailingNewLine('\n')
+
+internal fun CodeBlock.trimTrailingNewLine(replaceWith: Char? = null) = if (isEmpty()) {
   this
 } else {
   with(toBuilder()) {
@@ -146,11 +148,18 @@ internal fun CodeBlock.ensureEndsWithNewLine() = if (isEmpty()) {
     if (lastFormatPart.isPlaceholder && args.isNotEmpty()) {
       val lastArg = args.last()
       if (lastArg is String) {
-        args[args.size - 1] = lastArg.trimEnd('\n') + '\n'
+        val trimmedArg = lastArg.trimEnd('\n')
+        args[args.size - 1] = if (replaceWith != null) {
+          trimmedArg + replaceWith
+        } else {
+          trimmedArg
+        }
       }
     } else {
       formatParts[formatParts.lastIndexOf(lastFormatPart)] = lastFormatPart.trimEnd('\n')
-      formatParts += "\n"
+      if (replaceWith != null) {
+        formatParts += "$replaceWith"
+      }
     }
     return@with build()
   }
@@ -284,6 +293,50 @@ internal fun String.escapeIfNecessary(validate: Boolean = true): String = escape
   .escapeIfHasAllowedCharacters()
   .escapeIfAllCharactersAreUnderscore()
   .apply { if (validate) failIfEscapeInvalid() }
+
+/**
+ * Because of [KT-18706](https://youtrack.jetbrains.com/issue/KT-18706)
+ * bug all aliases escaped with backticks are not resolved.
+ *
+ * So this method is used instead, which uses custom escape rules:
+ * - if all characters are underscores, add `'0'` to the end
+ * - if it's a keyword, prepend it with double underscore `"__"`
+ * - if first character cannot be used as identifier start (e.g. a number), underscore is prepended
+ * - all `'$'` replaced with double underscore `"__"`
+ * - all characters that cannot be used as identifier part (e.g. space or hyphen) are
+ *   replaced with `"_U<code>"` where `code` is 4-digit Unicode character code in hexadecimal form
+ */
+internal fun String.escapeAsAlias(validate: Boolean = true): String {
+  if (allCharactersAreUnderscore) {
+    return "${this}0" // add '0' to make it a valid identifier
+  }
+
+  if (isKeyword) {
+    return "__$this"
+  }
+
+  val newAlias = StringBuilder("")
+
+  if (!Character.isJavaIdentifierStart(first())) {
+    newAlias.append('_')
+  }
+
+  for (ch in this) {
+    if (ch == ALLOWED_CHARACTER) {
+      newAlias.append("__") // all $ replaced with __
+      continue
+    }
+
+    if (!Character.isJavaIdentifierPart(ch)) {
+      newAlias.append("_U").append(Integer.toHexString(ch.code).padStart(4, '0'))
+      continue
+    }
+
+    newAlias.append(ch)
+  }
+
+  return newAlias.toString().apply { if (validate) failIfEscapeInvalid() }
+}
 
 private fun String.alreadyEscaped() = startsWith("`") && endsWith("`")
 

@@ -37,6 +37,43 @@ class CodeBlockTest {
     assertThat(a.toString()).isEqualTo("delicious taco")
   }
 
+  @Test fun doublePrecision() {
+    val doubles = listOf(
+      12345678900000.0 to "12_345_678_900_000.0",
+      12345678900000.07 to "12_345_678_900_000.07",
+      123456.0 to "123_456.0",
+      1234.5678 to "1_234.5678",
+      12.345678 to "12.345678",
+      0.12345678 to "0.12345678",
+      0.0001 to "0.0001",
+      0.00001 to "0.00001",
+      0.000001 to "0.000001",
+      0.0000001 to "0.0000001",
+    )
+    for ((d, expected) in doubles) {
+      val a = CodeBlock.of("number %L", d)
+      assertThat(a.toString()).isEqualTo("number $expected")
+    }
+  }
+
+  @Test fun floatPrecision() {
+    val floats = listOf(
+      12345678.0f to "12_345_678.0",
+      123456.0f to "123_456.0",
+      1234.567f to "1_234.567",
+      12.34567f to "12.34567",
+      0.1234567f to "0.1234567",
+      0.0001f to "0.0001",
+      0.00001f to "0.00001",
+      0.000001f to "0.000001",
+      0.0000001f to "0.0000001",
+    )
+    for ((f, expected) in floats) {
+      val a = CodeBlock.of("number %L", f)
+      assertThat(a.toString()).isEqualTo("number $expected")
+    }
+  }
+
   @Test fun percentEscapeCannotBeIndexed() {
     assertThrows<IllegalArgumentException> {
       CodeBlock.builder().add("%1%", "taco").build()
@@ -452,6 +489,12 @@ class CodeBlockTest {
       .isEqualTo(CodeBlock.of("(%L, %L, %L)", "taco1", "taco2", "taco3"))
   }
 
+  @Test fun joinToCodeTransform() {
+    val blocks = listOf("taco1", "taco2", "taco3")
+    assertThat(blocks.joinToCode { CodeBlock.of("%S", it) })
+      .isEqualTo(CodeBlock.of("%S, %S, %S", "taco1", "taco2", "taco3"))
+  }
+
   @Test fun beginControlFlowWithParams() {
     val controlFlow = CodeBlock.builder()
       .beginControlFlow("list.forEach { element ->")
@@ -547,12 +590,12 @@ class CodeBlockTest {
     )
   }
 
-  @Test fun `%N escapes keywords`() {
+  @Test fun `N escapes keywords`() {
     val funSpec = FunSpec.builder("object").build()
     assertThat(CodeBlock.of("%N", funSpec).toString()).isEqualTo("`object`")
   }
 
-  @Test fun `%N escapes spaces`() {
+  @Test fun `N escapes spaces`() {
     val funSpec = FunSpec.builder("create taco").build()
     assertThat(CodeBlock.of("%N", funSpec).toString()).isEqualTo("`create taco`")
   }
