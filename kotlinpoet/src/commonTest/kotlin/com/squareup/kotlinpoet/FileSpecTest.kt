@@ -373,6 +373,42 @@ class FileSpecTest {
     )
   }
 
+  @Test fun conflictingImportsEscapedWithoutBackticks() {
+    val foo1Type = ClassName("com.example.generated.one", "\$Foo")
+    val foo2Type = ClassName("com.example.generated.another", "\$Foo")
+
+    val testFun = FunSpec.builder("testFun")
+      .addCode(
+        """
+        val foo1 = %T()
+        val foo2 = %T()
+        """.trimIndent(),
+        foo1Type,
+        foo2Type,
+      )
+      .build()
+
+    val testFile = FileSpec.builder("com.squareup.kotlinpoet.test", "TestFile")
+      .addFunction(testFun)
+      .build()
+
+    assertThat(testFile.toString())
+      .isEqualTo(
+        """
+          |package com.squareup.kotlinpoet.test
+          |
+          |import com.example.generated.another.`${'$'}Foo` as Another__Foo
+          |import com.example.generated.one.`${'$'}Foo` as One__Foo
+          |
+          |public fun testFun() {
+          |  val foo1 = One__Foo()
+          |  val foo2 = Another__Foo()
+          |}
+          |
+        """.trimMargin(),
+      )
+  }
+
   @Test fun conflictingImportsEscapeKeywords() {
     val source = FileSpec.builder("com.squareup.tacos", "Taco")
       .addType(
@@ -526,6 +562,54 @@ class FileSpecTest {
       |public object K {
       |  public val test: S = S(0)
       |}
+      |
+      """.trimMargin(),
+    )
+  }
+
+  @Test fun aliasedImportClass() {
+    val packageName = "com.mypackage"
+    val className = ClassName(packageName, "Class")
+    val source = FileSpec.builder(packageName, "K")
+      .addAliasedImport(className, "C")
+      .addFunction(
+        FunSpec.builder("main")
+          .returns(className)
+          .addCode("return %T()", className)
+          .build(),
+      )
+      .build()
+    assertThat(source.toString()).isEqualTo(
+      """
+      |package com.mypackage
+      |
+      |import com.mypackage.Class as C
+      |
+      |public fun main(): C = C()
+      |
+      """.trimMargin(),
+    )
+  }
+
+  @Test fun aliasedImportWithNestedClass() {
+    val packageName = "com.mypackage"
+    val className = ClassName(packageName, "Outer").nestedClass("Inner")
+    val source = FileSpec.builder(packageName, "K")
+      .addAliasedImport(className, "INNER")
+      .addFunction(
+        FunSpec.builder("main")
+          .returns(className)
+          .addCode("return %T()", className)
+          .build(),
+      )
+      .build()
+    assertThat(source.toString()).isEqualTo(
+      """
+      |package com.mypackage
+      |
+      |import com.mypackage.Outer.Inner as INNER
+      |
+      |public fun main(): INNER = INNER()
       |
       """.trimMargin(),
     )
@@ -1126,6 +1210,7 @@ class FileSpecTest {
   class OhNoThisDoesNotCompile
 
   @Test fun longCommentWithTypes() {
+    @Suppress("REDUNDANT_PROJECTION")
     val someLongParameterizedTypeName = typeNameOf<List<Map<in String, Collection<Map<WackyKey, out OhNoThisDoesNotCompile>>>>>()
     val param = ParameterSpec.builder("foo", someLongParameterizedTypeName).build()
     val someLongLambdaTypeName = LambdaTypeName.get(STRING, listOf(param), STRING).copy(suspending = true)
@@ -1187,7 +1272,7 @@ class FileSpecTest {
       |
       |println("hello!")
       |
-      |public fun localFun() {
+      |fun localFun() {
       |}
       |
       |public class Yay
@@ -1241,5 +1326,36 @@ class FileSpecTest {
     val spec = FileSpec.builder(memberName).build()
     assertThat(spec.packageName).isEqualTo(memberName.packageName)
     assertThat(spec.name).isEqualTo(memberName.simpleName)
+  }
+
+  @Test fun topLevelPropertyWithControlFlow() {
+    val spec = FileSpec.builder("com.example.foo", "Test")
+      .addProperty(
+        PropertySpec.builder("MyProperty", String::class.java)
+          .initializer(
+            CodeBlock.builder()
+              .beginControlFlow("if (1 + 1 == 2)")
+              .addStatement("Expected")
+              .nextControlFlow("else")
+              .addStatement("Unexpected")
+              .endControlFlow()
+              .build(),
+          ).build(),
+      ).build()
+
+    assertThat(spec.toString()).isEqualTo(
+      """
+      |package com.example.foo
+      |
+      |import java.lang.String
+      |
+      |public val MyProperty: String = if (1 + 1 == 2) {
+      |  Expected
+      |} else {
+      |  Unexpected
+      |}
+      |
+      """.trimMargin(),
+    )
   }
 }
