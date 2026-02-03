@@ -15,7 +15,7 @@ third_party {
   identifier {
     type: "Git"
     value: "https://github.com/square/kotlinpoet.git"
-    version: "9b62c5a94af36c58a6375975db9a3b17c72e8e93"
+    version: "c5bf640d1db3611cc65cdb59199e4db9e312438c"
     closest_version: "1.18.1"
   }
 }
